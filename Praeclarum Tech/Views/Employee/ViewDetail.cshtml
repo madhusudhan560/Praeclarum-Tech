@@ -1,0 +1,295 @@
+﻿@model List<Praeclarum_Tech.Models.Employee>
+@{
+    ViewBag.Title = "EmployeeDetail";
+}
+
+<style>
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        color: #333;
+    }
+
+
+    .fa {
+        font-family: 'Font Awesome 5 Pro', sans-serif;
+        font-size: 16px;
+        color: #333;
+        cursor: pointer;
+    }
+
+
+    .fa-edit {
+        color: #007bff;
+    }
+
+
+    .fa-trash {
+        color: #dc3545;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+
+
+
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Employee Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            
+                <form id="editForm">
+                   
+                    <input type="hidden" id="employeeId" name="employeeId">
+                    <div class="form-group">
+                        <label for="editName">Name</label>
+                        <input type="text" class="form-control" id="editName" name="editName">
+                    </div>
+                   
+                    <div class="form-group">
+                        <label for="editAge">Age</label>
+                        <input type="text" class="form-control" id="editAge" name="editAge">
+                    </div>
+                    <div class="form-group">
+                        <label for="editPosition">Position</label>
+                        <input type="text" class="form-control" id="editPosition" name="editPosition">
+                    </div>
+                    <div class="form-group">
+                        <label for="editOffice">Company Name</label>
+                        <input type="text" class="form-control" id="editOffice" name="editOffice">
+                    </div>
+                    <div class="form-group">
+                        <label for="editHireDate">Hire Date</label>
+                        <input type="date" class="form-control" id="editHireDate" name="editHireDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="editSalary">Salary</label>
+                        <input type="text" class="form-control" id="editSalary" name="editSalary">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="updateEmployeeBtn">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-body">
+        <div class="btn-default" style="text-align:right;">
+            @Html.ActionLink("Add Employee", "Index", "Employee", null, new { @class = "btn btn-danger " })
+        </div>
+        <table style="margin-top:10px;">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Position</th>
+                    <th>Office</th>
+                    <th>Salary</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="employee-id hidden" data-id="@item.Id"></td>
+                        <td>@item.Name</td>
+                        <td>@item.Age</td>
+                        <td>@item.Position</td>
+                        <td>@item.Office</td>
+                        <td>@item.Salary</td>
+                        <td>
+                            <button class="edit-button" data-toggle="modal" data-target="#editModal">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <button class="trash-button">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script>
+
+       $(document).ready(function() {
+    $('.trash-button').click(function() {
+        debugger;
+        var id = $(this).closest('tr').find('.employee-id').data('id');
+
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("Delete", "Employee")',
+            dataType: 'json',
+            data: { id: id },
+            success: function(response) {
+
+                if (response.success)
+                {
+                    Swal.fire({
+                        position: 'top',
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        confirmButtonColor: '#3085d6',
+                    }).then(function () {
+
+                        window.location.href = '@Url.Action("ViewDetail", "Employee")';
+                    });
+
+
+                } else {
+
+                    Swal.fire({
+                        position: 'top',
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message,
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+
+                alert('An error occurred while deleting employee data: ' + error);
+            }
+        });
+    });
+           $('.edit-button').click(function () {
+
+               var employeeId = $(this).closest('tr').find('.employee-id').data('id');
+
+               $.ajax({
+                   type: "GET",
+                   url: '/Employee/GetEmployeeDetails/' + employeeId,
+                   dataType: 'json',
+                   success: function (response) {
+                       debugger;
+                       if (response.success) {
+                           $('#employeeId').val(response.id);
+                           $('#editName').val(response.name);
+                           $('#editAge').val(response.age);
+                           $('#editPosition').val(response.position);
+                           $('#editOffice').val(response.office);
+                           var microsoftJsonDate = response.hiredate;
+                           var date = new Date(parseInt(microsoftJsonDate.substr(6)));
+                           var formattedDate = formatDate(date);
+                           $('#editHireDate').val(formattedDate);
+                           $('#editSalary').val(response.salary);
+                       }
+                       else {
+                           Swal.fire({
+                               position: 'top',
+                               icon: 'error',
+                               title: 'Error',
+                               text: response.message,
+                               confirmButtonColor: '#3085d6'
+                           });
+                       }
+                   },
+                   error: function (xhr, status, error) {
+                       
+                       console.error('Error fetching employee details:', error);
+                   }
+               });
+           });
+
+           function formatDate(date) {
+               var year = date.getFullYear();
+               var month = (date.getMonth() + 1).toString().padStart(2, '0'); 
+               var day = date.getDate().toString().padStart(2, '0');
+               return year + '-' + month + '-' + day;
+           }
+           $('#updateEmployeeBtn').click(function () {
+
+               var employeeId = $('#employeeId').val();
+               var newName = $('#editName').val();  
+               var newage = $('#editAge').val();
+              var newposition =  $('#editPosition').val();
+             var newoffice =   $('#editOffice').val();
+             var newhiredate =   $('#editHireDate').val();
+              var newsalary =  $('#editSalary').val();
+
+               $.ajax({
+                   type: "POST",
+                   url: '/Employee/UpdateEmployeeDetails',
+                   dataType: 'json',
+                   data: {
+                       employeeId: employeeId,
+                       newName: newName,
+                       newage: newage,
+                       newposition: newposition,
+                       newoffice: newoffice,
+                       newhiredate: newhiredate,
+                       newsalary: newsalary
+
+                   },
+                   success: function (response) {
+
+                      if (response.success)
+                      {
+                          Swal.fire({
+                              position: 'top',
+                              icon: 'success',
+                              title: 'Success',
+                              text: response.message,
+                              confirmButtonColor: '#3085d6',
+                          }).then(function () {
+                      
+                              window.location.href = '@Url.Action("ViewDetail", "Employee")';
+                          });
+                      }
+                      else {
+                              Swal.fire({
+                                  position: 'top',
+                                  icon: 'error',
+                                  title: 'Error',
+                                  text: "Employee detail not updated successfully",
+                                  confirmButtonColor: '#3085d6'
+                              });
+                          }
+
+                       $('#editModal').modal('hide');
+
+                   },
+                   error: function (xhr, status, error) {
+
+                       console.error('Error updating employee details:', error);
+                   }
+               });
+           });
+});
+
+</script>

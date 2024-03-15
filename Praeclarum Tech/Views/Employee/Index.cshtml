@@ -1,0 +1,179 @@
+﻿@model  Praeclarum_Tech.Models.Employee
+@{
+    ViewBag.Title = "Employee Details";
+}
+
+<style>
+    span.select2-container {
+        width: 100% !important;
+    }
+    .background-overlay {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 10000;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); 
+    }
+</style>
+<div class="card">
+    <div class="card-body">
+        <div class="container-fluid" id="container-wrapper">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-4 pb-2 mb-2">
+                <h1 class="h3 font-weight-bold">Add Your Last Company Detail</h1>
+                <div class="btn-default" style="text-align:right;">
+                    @Html.ActionLink("View Employee", "ViewDetail", "Employee", null, new { @class = "btn btn-danger " })
+                </div>
+            </div>
+            
+
+            <div class="card my-2">
+                <div class="card-body">
+                    <div id="loading" style="display: none; position: absolute; z-index: 999999">
+                        <div class="background-overlay"></div>
+                        <div id="loader_image" style="position: fixed; left: 40%; top: 37%; z-index: 999999;">
+                            <img src="../../images/ajax_loader_large.gif" />
+                        </div>
+                    </div>
+                    <form class="forms-sample">
+                        <div class="row">
+                            <div class="d-none"></div>
+                            <div class="col-lg-6 mb-3">
+                               
+                                <div class="form-group">
+                                    <label for="txtFirstName">First Name</label>
+                                    @Html.TextBoxFor(x => x.Name, new { @placeholder = "First Name", @class = "form-control", @id = "txtFirstName", @maxlength = "50" })
+
+                                </div>
+                                <div class="form-group">
+                                    <label for="gender">Gender:</label>
+                                    <select class="form-control" id="gender" name="gender">
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="Age">Age</label>
+                                    @Html.TextBoxFor(x => x.Age, new { @placeholder = "Enter Your Age", @class = "form-control", @id = "Age", @maxlength = "10" })
+
+                                </div>
+                                <div class="form-group">
+                                    <label for="txtPosition">Position</label>
+                                    @Html.TextBoxFor(x => x.Position, new { @placeholder = "Enter Your Last Company Position ", @class = "form-control", @id = "txtPosition", @maxlength = "50" })
+
+                                </div>
+                                <div class="form-group">
+                                    <label for="txtOffice">Company Name</label>
+                                    @Html.TextBoxFor(x => x.Office, new { @placeholder = "Enter Your Company Name", @class = "form-control", @id = "txtOffice", @maxlength = "50" })
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.HireDate, new { @class = "control-label" })
+                                    @Html.TextBoxFor(m => m.HireDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date", @id = "Date" })
+
+                                </div>
+                                <div class="form-group">
+                                    <label for="txtSalary">Salary</label>
+                                    @Html.TextBoxFor(x => x.Salary, new { @placeholder = "Enter Your Last Salary ", @class = "form-control", @id = "txtSalary", @maxlength = "50" })
+
+                                </div>
+
+                            </div>
+                        </div>
+                       
+                            <button class="btn-primary" onclick="SaveDetails()" type="button">Save Details</button>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    function SaveDetails()
+    {
+        var id = $("#employeeId").val();
+        var Name = $("#txtFirstName").val();
+        var Age = $("#Age").val();
+        var Positions = $("#txtPosition").val();
+        var office = $("#txtOffice").val();
+        var Dates = $("#Date").val();
+        var Salary = $("#txtSalary").val();
+        var Gender = $("#gender").val();
+        if (Name == "") {
+            swal("Cancelled", "Please Enter Your Name", "error");
+
+            return false;
+        }
+        if (Age == "") {
+            swal("Cancelled", "Please Enter Your Age", "error");
+
+            return false;
+        }
+        if (Positions == "") {
+            swal("Cancelled", "Please Enter Your Position", "error");
+
+            return false;
+        }
+        if (office == "") {
+            swal("Cancelled", "Please Enter Your Last Office Name", "error");
+
+            return false;
+        }
+        if (Salary == "") {
+            swal("Cancelled", "Please Enter Last Sallary", "error");
+            return false;
+        }
+        if (Gender == "") {
+            swal("Cancelled", "Please Enter Your Gender", "error");
+            return false;
+        }
+        if (Dates == "") {
+            swal("Cancelled", "Please enter Last Company Hiring Date", "error");
+            return false;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("SaveEmployee", "Employee")',
+            datatype: 'json',
+            data: {  Name: Name, Age: Age, Position: Positions, Office: office, HireDate: Dates, Salary: Salary, Gender: Gender },
+            success: function (response) {
+                debugger;
+                if (response.success) {
+                    Swal.fire({
+                        position: 'top',
+                        icon: 'success',
+                        title: 'Success',
+                        text: "Your Details Is successfully saved!!",
+                        confirmButtonColor: '#3085d6'
+                    }).then(function () {
+
+                      window.location.href = '@Url.Action("ViewDetail", "Employee")';
+                    });
+
+                } else {
+                    swal({
+                        position: 'top',
+                        icon: 'error',
+                        title: 'Error',
+                        text: "Your Details Is Not Saved Successfully",
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+
+                alert('An error occurred while saving detail: ' + error);
+            }
+        });
+
+    }
+   
+
+
+</script>

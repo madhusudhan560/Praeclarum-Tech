@@ -1,0 +1,22 @@
+﻿@{
+    ViewBag.Title = "Welcome To Praclarum Tech";
+}
+<div class="card" style="text-align:center;">
+    <div class="card-body">
+        <div class="form-group">
+            <h1>Welcome To Praeclarum Tech Test</h1>
+            <i>Click on below button <br />
+               You can check crud operation
+            </i>
+            <button class="btn-primary" type="button" onclick="ShowCrud()" style="text-align:center;">Click Here</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function ShowCrud() {
+            window.location.href = '@Url.Action("Index", "Employee")';
+
+    }
+</script>
